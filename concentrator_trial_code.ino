@@ -267,19 +267,20 @@ void compressorSol_on(){//this function switches off all concentrators and switc
   
     } else{
         digitalWrite(sol1,HIGH);
-        delay(1000);
-        digitalWrite(SSR4comp,HIGH);
         delay(500);
-        
         digitalWrite(sol1,LOW);
+        digitalWrite(SSR4comp,HIGH);
+        delay(1000);
+        
+        //digitalWrite(sol1,LOW);
         //delay(5000);
         //digitalWrite(SSR4comp,HIGH);
        digitalWrite(sol,HIGH);
+        //digitalWrite(SSR4comp,LOW);
         
-        
-        //digitalWrite(sol1,HIGH);
-        //delay(1000);
-        //digitalWrite(sol1,LOW);
+        digitalWrite(sol1,HIGH);
+        delay(500);
+        digitalWrite(sol1,LOW);
         
       
       }
