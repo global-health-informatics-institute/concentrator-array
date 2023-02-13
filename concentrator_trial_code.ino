@@ -252,9 +252,9 @@ void compressorSol_off(){ //this function switches on all concentrators and swit
  lcd.setCursor(9,1);   
  lcd.println("All");
  //delay(2000);
- //digitalWrite(sol1,HIGH);
- //delay(1000);
- //digitalWrite(sol1,LOW);
+ digitalWrite(sol1,HIGH);
+ delay(1000);
+ digitalWrite(sol1,LOW);
 
  
 
@@ -265,28 +265,26 @@ void compressorSol_on(){//this function switches off all concentrators and switc
   if(value ==1){
     digitalWrite(SSR4comp,HIGH);
   
-    } else{
+    } 
+  else{
         digitalWrite(sol1,HIGH);
-        delay(500);
-        digitalWrite(sol1,LOW);
-        digitalWrite(SSR4comp,HIGH);
-        delay(1000);
-        
+        delay(2000);
         //digitalWrite(sol1,LOW);
+        digitalWrite(SSR4comp,HIGH);
+        delay(500);
+        
+        digitalWrite(sol1,LOW);
         //delay(5000);
         //digitalWrite(SSR4comp,HIGH);
        digitalWrite(sol,HIGH);
         //digitalWrite(SSR4comp,LOW);
         
-        digitalWrite(sol1,HIGH);
-        delay(500);
-        digitalWrite(sol1,LOW);
+        //digitalWrite(sol1,HIGH);
+        //delay(500);
+        //digitalWrite(sol1,LOW);
         
       
       }
-
- 
- 
 }
 void all_on(){//turns on all concentrators when called
   digitalWrite(SSR1,HIGH);
