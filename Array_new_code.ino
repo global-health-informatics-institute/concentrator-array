@@ -6,16 +6,16 @@ EnergyMonitor emon1; // Create an instance
  
 //declare variables used in the code
 LiquidCrystal_I2C lcd= LiquidCrystal_I2C(0x27, 16, 2);
-const int LpressureInput =A3;
-const int HpressureInput =A6; 
-const int LpressureZero =90;
-const int LpressureMax =780;
-const int HpressureZero =90;
-const int HpressureMax =793;
-const int LpressuretransducerMaxPSI = 30;
-const int HpressuretransducerMaxPSI = 100;
+const int LpressureInput =A3; //pin on arduino nano
+const int HpressureInput =A6; //pin on arduino nano
+const int LpressureZero =90; //values for calibrating the sensor
+const int LpressureMax =780; //values for calibrating the sensor
+const int HpressureZero =90; //values for calibrating the sensor
+const int HpressureMax =793; //values for calibrating the sensor
+const int LpressuretransducerMaxPSI = 30; //pressure sensor on the low pressure tank
+const int HpressuretransducerMaxPSI = 100;//pressure sensor on the High pressure tank
 const int sensorreadDelay = 250;
-const int SSR4comp=5 ,SSR1 =2,SSR2=3,SSR3=4,SSR5=6,SSR6=7,SSR7 =8; //Solid State Relay pins
+const int SSR4comp=5 ,SSR1 =2,SSR2=3,SSR3=4,SSR5=6,SSR6=7,SSR7 =8; //Solid State Relay pins, SSR control power in the sockets
 const int  Reliefvalve=11,Outletvalve=10,Inletvalve=12; //relief solenoid valve for the compressor,inletvalve from L.P to H.P and outletvalve from H.p to outlet
 
 float a,b,c,d,e,f,g;//declaring variable in which current measured values will be stored
@@ -85,9 +85,10 @@ void loop() {
   if(HpressureValue < 20){ 
     all_on();
     if(LpressureValue > 4){
-     digitalWrite(Reliefvalve,HIGH);   
+     digitalWrite(Reliefvalve,HIGH); 
+     delay(500);  
      digitalWrite(SSR4comp,HIGH);
-     delay(500);   
+        
      digitalWrite(Reliefvalve,LOW);
      digitalWrite(Inletvalve,HIGH); 
     
@@ -98,7 +99,25 @@ void loop() {
     digitalWrite(Inletvalve,LOW); 
    }
   }
-  
+  if(HpressureValue > 20 && HpressureValue < 50){
+  digitalWrite(Outletvalve,HIGH);
+  all_on();
+   
+   if(LpressureValue > 4){
+     digitalWrite(Reliefvalve,HIGH);
+     delay(500);   
+     digitalWrite(SSR4comp,HIGH);
+        
+     digitalWrite(Reliefvalve,LOW);
+     digitalWrite(Inletvalve,HIGH); 
+    
+    digitalWrite(Outletvalve,LOW);//turn off the output valve 
+   }
+    else if(LpressureValue <1){
+    digitalWrite(SSR4comp,LOW);
+    digitalWrite(Inletvalve,LOW); 
+   }
+  }
 }
   void all_on(){//turns on all concentrators when called
   digitalWrite(SSR1,HIGH);
