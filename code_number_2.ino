@@ -20,11 +20,22 @@ const int  Reliefvalve=11,Outletvalve=10,Inletvalve=12; //relief solenoid valve 
 
 float a,b,c,d,e,f,g;//declaring variable in which current measured values will be stored
 unsigned long currentMillis = millis();// //keeps the current tracked time in the variable currentMills, used if HpressureValue>50
+unsigned long currentMillis1 = millis();//keeps the current tracked time in the variable currentMills1, used if HpressureValue>60&<70 
+
 long runTime = 0; // initilizing the time that will be indicated & be used to control the concentrators when HpressureValue>50
+long runTime1 = 0; //initilizing the time that will be indicated & be used to control the concentrators when HpressureValue>60&<70
+
 long previousMillis = 0;
+long previousMillis1 = 0;
+
 long interval = 60000;
 long interval1 = 60000;
-long interval2 = 120000;
+long interval2 = 120000; 
+long interval21 = 120000;
+long interval3 = 180000;
+long interval4 = 240000;
+long interval5 = 300000;
+long interval6 = 360000;
 
 //declare variables for storing meassured pressure values
 float LpressureValue = 0;
@@ -81,6 +92,12 @@ void loop() {
     six_c_running_and_mpt_filling();
   else if (currentState == 4)
     six_concentrators_running();
+  else if (currentState == 5)
+    four_c_running_and_mpt_filling();
+  else if (currentState == 6)
+    four_concentrators_running();
+  else if (currentState == 7)
+    all_off();      
             
 }
 
@@ -118,13 +135,20 @@ lcd.setCursor(0,1);
 lcd.print("Running: ");
 lcd.setCursor(9,1);   
 lcd.println("All"); 
-mpt_filling(); 
-if(HpressureValue >20){ 
+mpt_filling();
+ 
+if(HpressureValue > 20){ 
 digitalWrite(Outletvalve,HIGH);
 }
-if(HpressureValue > 50){
+
+if(HpressureValue < 20){
+digitalWrite(Outletvalve,LOW);  
+}
+
+if(HpressureValue > 51){
 currentState = 3; 
 }
+
 if(LpressureValue < 1 )
 currentState = 1;  
 }
@@ -152,8 +176,11 @@ Serial.println(runTime,1);
        previousMillis = currentMillis;//stores the current time in previousMills to be used to reset the runTime 
      }
  mpt_filling();
-//if(HpressureValue < 50)
-  //currentState = 2;
+if(HpressureValue < 50)
+  currentState = 2;
+  
+if(HpressureValue >61) 
+  currentState = 5; 
 if(LpressureValue < 1 )
   currentState = 4; 
 }
@@ -195,10 +222,11 @@ void mpt_filling(){
   
     } else{
         digitalWrite(Reliefvalve,HIGH);
-        delay(1000);
-        //digitalWrite(Reliefvalve,LOW);
+        delay(100);
+        
+   
         digitalWrite(SSR4comp,HIGH);
-        delay(500);
+        delay(52200);
         digitalWrite(Reliefvalve,LOW);
         
         digitalWrite(Inletvalve,HIGH);
@@ -206,7 +234,162 @@ void mpt_filling(){
       }
 }
 
+void four_c_running_and_mpt_filling(){
+ runTime1=currentMillis1 - previousMillis1;// timing for turning two sockets when prssure is between 60 and 70
+ Serial.print("RunTime1 ="); 
+ Serial.println(runTime1,1);    
+    if(runTime1 < interval1){
+      if (a>0.8 && b>0.8){
+          left1 ();
+         }
+      else{
+         alt2ls_on();
+          }}
 
+     if(runTime1 > interval1 && runTime1 < interval21 ){
+       if (a>0.8 && c>0.8){
+          left2 ();
+          }
+      
+      else{
+        alt2ls_on();
+      }}
+    
+    if(runTime1 > interval21 && runTime1 < interval3 ){
+    
+       if (b>0.8 && c>0.8){
+          left3 ();
+          }
+      
+      else{
+        alt2ls_on();
+      }}
+
+    if(runTime1 > interval3 && runTime1 < interval4 ){
+      if (d>0.8 && e>0.8){
+          right1 ();
+         }
+      else{
+         alt2rs_on();
+          }}
+
+     if(runTime1 > interval4 && runTime1 < interval5 ){
+       if (d>0.8 && f>0.8){
+          right2 ();
+          }
+      
+      else{
+        alt2rs_on();
+      }}
+    if(runTime1 > interval5 && runTime1 < interval6 ){
+    
+       if (e>0.8 && f>0.8){
+          right3 ();
+          }
+      
+      else{
+        alt2rs_on();
+      }}
+   if(runTime1 > interval6 ){
+      previousMillis1 = currentMillis; //stores the current time in previousMills1 to be used to reset the runTime1 
+    }
+   mpt_filling(); 
+  if(HpressureValue < 60)
+      currentState = 4; 
+  if(HpressureValue > 70 )
+      currentState = 7;    
+  if(LpressureValue < 1)
+      currentState = 6;    
+     
+}
+ 
+void four_concentrators_running(){
+ digitalWrite(SSR4comp,LOW);
+ digitalWrite(Inletvalve,LOW);
+ runTime1=currentMillis1 - previousMillis1;// timing for turning two sockets when prssure is between 60 and 70
+ Serial.print("RunTime1 ="); 
+ Serial.println(runTime1,1);    
+    if(runTime1 < interval1){
+      if (a>0.8 && b>0.8){
+          left1 ();
+         }
+      else{
+         alt2ls_on();
+          }}
+
+     if(runTime1 > interval1 && runTime1 < interval21 ){
+       if (a>0.8 && c>0.8){
+          left2 ();
+          }
+      
+      else{
+        alt2ls_on();
+      }}
+    
+    if(runTime1 > interval21 && runTime1 < interval3 ){
+    
+       if (b>0.8 && c>0.8){
+          left3 ();
+          }
+      
+      else{
+        alt2ls_on();
+      }}
+
+    if(runTime1 > interval3 && runTime1 < interval4 ){
+      if (d>0.8 && e>0.8){
+          right1 ();
+         }
+      else{
+         alt2rs_on();
+          }}
+
+     if(runTime1 > interval4 && runTime1 < interval5 ){
+       if (d>0.8 && f>0.8){
+          right2 ();
+          }
+      
+      else{
+        alt2rs_on();
+      }}
+    if(runTime1 > interval5 && runTime1 < interval6 ){
+    
+       if (e>0.8 && f>0.8){
+          right3 ();
+          }
+      
+      else{
+        alt2rs_on();
+      }}
+   if(runTime1 > interval6 ){
+      previousMillis1 = currentMillis; //stores the current time in previousMills1 to be used to reset the runTime1 
+    }
+   if(LpressureValue > 4)
+      currentState = 5;      
+}
+
+void all_off(){
+  
+  digitalWrite(SSR1,LOW);
+  digitalWrite(SSR2,LOW);
+  digitalWrite(SSR3,LOW);
+  digitalWrite(SSR5,LOW);
+  digitalWrite(SSR6,LOW);
+  digitalWrite(SSR7,LOW);
+  digitalWrite(SSR4comp,LOW);
+  digitalWrite(Inletvalve,LOW);
+  digitalWrite(Reliefvalve,LOW);
+  digitalWrite(Outletvalve,HIGH);
+  lcd.clear();
+  pressurePrinting ();
+  lcd.setCursor(0,1);   
+  lcd.print("off: ");
+  lcd.setCursor(5,1);   
+  lcd.println("All");
+  if(HpressureValue < 70)
+      currentState = 6; 
+   
+}
 
 float get_Lpressure(){
   LpressureValue = analogRead(LpressureInput);//read analog pressure value in low pressure tank
@@ -410,94 +593,7 @@ void rightHS_concentrators_on(){//will turn on three concntrators both from righ
   lcd.println("5 6 7");
   }
 
-void alt_left_on (){ // select other alternative to turn on if no concentrator is connected on some socckets on the left side
-  for(int i=0;i<10;i++){// if some concentrators on the left side are not connected, select the connected from both sides
-          if(a>0.8 && d>0.8 && e>0.8){
-             half_on1 ();
-             break;
-          }
-          if(a>0.8 && d>0.8 && f>0.8){
-             half_on2 ();
-             break;
-           }
-          if(a>0.8 && e>0.8 && f>0.8){
-              half_on3 ();
-              break;
-           }
-          if(b>0.8 && d>0.8 && e>0.8){
-              half_on4 ();
-              break;
-             }
-          if(b>0.8 && d>0.8 && f>0.8){
-              half_on5 ();
-              break;
-             }
-          if(b>0.8 && e>0.8 && f>0.8){
-              half_on6 ();
-              break;
-             }
-          if(c>0.8 && d>0.8 && e>0.8){
-              half_on7 ();
-              break;
-             }
-          if(c>0.8 && d>0.8 && f>0.8){
-             half_on8 ();
-             break;
-           }
-          if(c>0.8 && e>0.8 && f>0.8){
-             half_on9 ();
-             break;
-           }
-          if(d>0.8 && a>0.8 && b>0.8){
-              half_on10 ();
-              break;
-             }
 
-          if(d>0.8 && a>0.8 && c>0.8){
-              half_on11 ();
-              break;
-             } 
-
-          if(d>0.8 && b>0.8 && c>0.8){
-              half_on12 ();
-              break;
-             }
-          if(e>0.8 && a>0.8 && b>0.8){
-             half_on13 ();
-             break;
-              }
-
-          if(e>0.8 && a>0.8 && c>0.8){
-             half_on14 ();
-             break;
-             }
-          if(e>0.8 && b>0.8 && c>0.8){
-             half_on15 ();
-             break;
-            }
-
-          if(f>0.8 && a>0.8 && b>0.8){
-              half_on16 ();
-              break;
-             }
-          if(f>0.8 && a>0.8 && c>0.8){
-              half_on17 ();
-              break;
-              }
-           if(f>0.8 && b>0.8 && c>0.8){
-              half_on18 ();
-              break;
-             }
-           if((a+b+c)>0.8){
-              leftHS_concentrators_on();
-              break;
-             }
-           if((d+e+f)>0.8){
-              rightHS_concentrators_on();
-              break;
-             }
-             
-        }}
            
   
 
@@ -795,3 +891,453 @@ void running_concPrinting(){// it prints the positions of concentrators that are
   lcd.print("Running: ");
   lcd.setCursor(9,1);   
   }
+
+void alt_left_on (){ // select other alternative to turn on if no concentrator is connected on some socckets on the left side
+  for(int i=0;i<10;i++){// if some concentrators on the left side are not connected, select the connected from both sides
+          if(a>0.8 && d>0.8 && e>0.8){
+             half_on1 ();
+             break;
+          }
+          if(a>0.8 && d>0.8 && f>0.8){
+             half_on2 ();
+             break;
+           }
+          if(a>0.8 && e>0.8 && f>0.8){
+              half_on3 ();
+              break;
+           }
+          if(b>0.8 && d>0.8 && e>0.8){
+              half_on4 ();
+              break;
+             }
+          if(b>0.8 && d>0.8 && f>0.8){
+              half_on5 ();
+              break;
+             }
+          if(b>0.8 && e>0.8 && f>0.8){
+              half_on6 ();
+              break;
+             }
+          if(c>0.8 && d>0.8 && e>0.8){
+              half_on7 ();
+              break;
+             }
+          if(c>0.8 && d>0.8 && f>0.8){
+             half_on8 ();
+             break;
+           }
+          if(c>0.8 && e>0.8 && f>0.8){
+             half_on9 ();
+             break;
+           }
+          if(d>0.8 && a>0.8 && b>0.8){
+              half_on10 ();
+              break;
+             }
+
+          if(d>0.8 && a>0.8 && c>0.8){
+              half_on11 ();
+              break;
+             } 
+
+          if(d>0.8 && b>0.8 && c>0.8){
+              half_on12 ();
+              break;
+             }
+          if(e>0.8 && a>0.8 && b>0.8){
+             half_on13 ();
+             break;
+              }
+
+          if(e>0.8 && a>0.8 && c>0.8){
+             half_on14 ();
+             break;
+             }
+          if(e>0.8 && b>0.8 && c>0.8){
+             half_on15 ();
+             break;
+            }
+
+          if(f>0.8 && a>0.8 && b>0.8){
+              half_on16 ();
+              break;
+             }
+          if(f>0.8 && a>0.8 && c>0.8){
+              half_on17 ();
+              break;
+              }
+           if(f>0.8 && b>0.8 && c>0.8){
+              half_on18 ();
+              break;
+             }
+           if((a+b+c)>0.8){
+              leftHS_concentrators_on();
+              break;
+             }
+           if((d+e+f)>0.8){
+              rightHS_concentrators_on();
+              break;
+             }
+             
+        }}
+           
+  
+
+
+void alt2ls_on(){// if there is no possible combination of two concentrators on the left side it will check from both sides
+  for (int soc=1;soc<3; soc++){
+        if (a>0.8 && d>0.8){
+          alt1 ();
+          break;
+         } 
+        if (a>0.8 && e>0.8){
+          alt2 ();
+          break;
+        }
+        
+        if (a>0.8 && f>0.8){
+           alt3 ();
+           break;
+        }
+        if (b>0.8 && d>0.8){
+          alt4 ();
+          break;
+          }
+       if (b>0.8 && e>0.8){
+        alt5 ();
+        break;
+       }
+       if (b>0.8 && f>0.8){
+         alt6 ();
+        break;
+       }
+       if (c>0.8 && d>0.8){
+         alt7 ();
+        break;
+       }
+           
+       if (c>0.8 && e>0.8){
+         alt8 ();
+        break; 
+       }
+       if (c>0.8 && f>0.8){
+         alt9 ();
+         break;
+      }
+
+       if (runTime1< interval1) {
+         if (d>0.8 && e>0.8){
+           right1 ();
+           break;
+          }
+         if (d>0.8 && f>0.8){
+           right2 ();
+           break;
+          }
+         if (e>0.8 && f>0.8){
+           right3 ();
+           break;
+         }      
+          }
+
+        if (runTime1> interval1 && runTime1 < interval21) {
+           if (d>0.8 && f>0.8){
+             right2 ();
+             break;
+           }
+           if (d>0.8 && e>0.8){
+             right1 ();
+             break;
+           }
+           if (e>0.8 && f>0.8){
+             right3 ();
+             break;
+           }      
+          }
+          if (runTime1> interval21 && runTime1 < interval3) {
+           if (e>0.8 && f>0.8){
+             right3 ();
+             break;
+           }      
+           if (d>0.8 && f>0.8){
+             right2 ();
+             break;
+           }
+           if (d>0.8 && e>0.8){
+             right1 ();
+             break;
+           }
+          }
+
+       // if no any combination of two concentrators is found it has to shift to the side with a concentrator connected 
+       if((a+b+c)>0.8){
+              leftHS_concentrators_on();
+              break;
+             } 
+       if((d+e+f)>0.8){
+              rightHS_concentrators_on();
+              break;
+             }
+  } }
+
+void alt2rs_on(){// if there is no possible combination of two concentrators on the right side it will check from both sides
+ for (int soc=1;soc<3; soc++){
+  if (c>0.8 && f>0.8){
+         alt9 ();
+         break;
+      }      
+
+   if (c>0.8 && e>0.8){
+         alt8 ();
+         break;
+         }
+
+   if (c>0.8 && d>0.8){
+         alt7 ();
+         break;      
+       }
+
+   if (b>0.8 && f>0.8){
+         alt6 ();
+        break;
+       }       
+   if (b>0.8 && e>0.8){
+        alt5 ();
+        break;
+       }      
+
+  if (b>0.8 && d>0.8){
+          alt4 ();
+          break;
+          }   
+  if (a>0.8 && f>0.8){
+           alt3 ();
+           break;
+        }
+
+  if (a>0.8 && e>0.8){
+          alt2 ();
+          break;
+        }        
+  if (a>0.8 && d>0.8){
+          alt1 ();
+          break;
+         } 
+  if (runTime1> interval3 && runTime1 < interval4){
+   if (a>0.8 && b>0.8){
+  
+          left1 ();
+           break;
+         }
+    if (a>0.8 && c>0.8){
+          left2 ();
+           break;
+          }
+    if (b>0.8 && c>0.8){
+          left3 ();
+           break;
+          }}
+  if (runTime1> interval4 && runTime1 < interval5) {
+    if (a>0.8 && c>0.8){
+          left2 ();
+           break;}
+    if (a>0.8 && b>0.8){
+          left1 ();
+           break;
+         }
+    if (a>0.8 && d>0.8){
+          alt1 ();
+          break;
+         }}
+          
+   if (runTime1> interval5 && runTime1 < interval6) {
+    if (b>0.8 && c>0.8){
+          left3 ();
+           break;
+          }
+    if (a>0.8 && c>0.8){
+          left2 ();
+           break;
+          }
+    if (a>0.8 && b>0.8){
+         left1 ();
+           break;
+         }      
+          }
+
+   // if no any combination of two concentrators is found it has to shift to the side with a concentrator connected       
+  if((d+e+f)>0.8){
+   rightHS_concentrators_on();
+   break;
+   } 
+
+  if((a+b+c)>0.8){
+   leftHS_concentrators_on();
+   break;
+   } 
+                    
+}}
+
+void left1 (){ //will turn on two concntrators both from left that are on HIGH if the function is called 
+  digitalWrite(SSR1,HIGH);
+  digitalWrite(SSR2,HIGH);
+  digitalWrite(SSR3,LOW);
+  digitalWrite(SSR5,LOW);
+  digitalWrite(SSR6,LOW);
+  digitalWrite(SSR7,LOW);
+  running_concPrinting(); 
+  lcd.println("1 2");
+   } 
+
+ void left2 (){ //will turn on two concntrators both from left that are on HIGH if the function is called 
+  digitalWrite(SSR1,HIGH);
+  digitalWrite(SSR2,LOW);
+  digitalWrite(SSR3,HIGH);
+  digitalWrite(SSR5,LOW);
+  digitalWrite(SSR6,LOW);
+  digitalWrite(SSR7,LOW);
+  running_concPrinting();   
+  lcd.println("1 3");
+  }
+           
+void left3 (){  //will turn on two concntrators both from left that are on HIGH if the function is called    
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,HIGH);
+ digitalWrite(SSR3,HIGH);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();   
+ lcd.println("2 3");
+ }
+
+ void right1 (){//will turn on two concntrators that are on HIGH if the function is called
+  digitalWrite(SSR1,LOW);
+  digitalWrite(SSR2,LOW);
+  digitalWrite(SSR3,LOW);
+  digitalWrite(SSR5,HIGH);
+  digitalWrite(SSR6,HIGH);
+  digitalWrite(SSR7,LOW);
+  running_concPrinting(); 
+  lcd.println("5 6");
+   } 
+
+ void right2 (){//will turn on two concntrators that are on HIGH if the function is called
+  digitalWrite(SSR1,LOW);
+  digitalWrite(SSR2,LOW);
+  digitalWrite(SSR3,LOW);
+  digitalWrite(SSR5,HIGH);
+  digitalWrite(SSR6,LOW);
+  digitalWrite(SSR7,HIGH);
+  running_concPrinting();   
+  lcd.println("5 7");
+  }
+           
+void right3 (){ //will turn on two concntrators that are on HIGH if the function is called     
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,HIGH);
+ digitalWrite(SSR7,HIGH);
+ running_concPrinting();  
+ lcd.println("6 7");
+ }
+
+void alt1 () { //will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,HIGH);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,HIGH);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();  
+ lcd.println("1 5");
+ } 
+
+void alt2 () {//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,HIGH);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,HIGH);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();
+ lcd.println("1 6");
+ }
+
+void  alt3 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,HIGH);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,HIGH);
+ running_concPrinting();   
+ lcd.println("1 7");
+ } 
+
+void alt4 (){//will turn on two concntrators that are on HIGH if the function is called 
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,HIGH);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,HIGH);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();  
+ lcd.println("2 5");
+  } 
+
+void alt5 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,HIGH);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,HIGH);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting(); 
+ lcd.println("2 6");
+ } 
+
+void  alt6 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,HIGH);
+ digitalWrite(SSR3,LOW);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,HIGH);
+ running_concPrinting();
+ lcd.println("2 7");
+ }
+
+void  alt7 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,HIGH);
+ digitalWrite(SSR5,HIGH);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();
+ lcd.println("3 5");
+ }
+ 
+void  alt8 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,HIGH);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,HIGH);
+ digitalWrite(SSR7,LOW);
+ running_concPrinting();
+ lcd.println("3 6");
+ } 
+void alt9 (){//will turn on two concntrators that are on HIGH if the function is called
+ digitalWrite(SSR1,LOW);
+ digitalWrite(SSR2,LOW);
+ digitalWrite(SSR3,HIGH);
+ digitalWrite(SSR5,LOW);
+ digitalWrite(SSR6,LOW);
+ digitalWrite(SSR7,HIGH);
+ running_concPrinting();   
+ lcd.println("3 7");
+ }           
