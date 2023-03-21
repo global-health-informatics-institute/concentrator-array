@@ -20,14 +20,15 @@ const int  Reliefvalve=11,Outletvalve=10,Inletvalve=12; //relief solenoid valve 
 
 float a,b,c,d,e,f,g;//declaring variable in which current measured values will be stored
 unsigned long currentMillis = millis();// //keeps the current tracked time in the variable currentMills, used if HpressureValue>50
-unsigned long currentMillis1 = millis();//keeps the current tracked time in the variable currentMills1, used if HpressureValue>60&<70 
+unsigned long currentMillis1 = millis();//keeps the current tracked time in the variable currentMills1, used if HpressureValue>60 
 
 long runTime = 0; // initilizing the time that will be indicated & be used to control the concentrators when HpressureValue>50
 long runTime1 = 0; //initilizing the time that will be indicated & be used to control the concentrators when HpressureValue>60&<70
 
-long previousMillis = 0;
-long previousMillis1 = 0;
+long previousMillis = 0;//keeps the current tracked time in the variable currentMills, used if HpressureValue>50
+long previousMillis1 = 0;//keeps the current tracked time in the variable currentMills1, used if HpressureValue>60
 
+//declaration of time intervals for runing each set of concentrators selected
 long interval = 60000;
 long interval1 = 60000;
 long interval2 = 120000; 
@@ -47,7 +48,7 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   lcd.init();
-  lcd.backlight();
+  lcd.backlight(); 
 
   //setting SSR, sol,LpressureInput,HpressureInput and pins as output pins
   pinMode(SSR1,OUTPUT); 
@@ -74,8 +75,8 @@ void setup() {
    lcd.println("Warming Up      ");
    Serial.println("Warming Up");
    delay(15000);
-   conc_current_check();
-   currentState = 1; 
+   conc_current_check(); //function for checking current in the sockets
+   currentState = 1; //declaration of the first state
 }
 
 void loop() {
@@ -85,23 +86,23 @@ void loop() {
   pressurePrinting ();
 
   if (currentState == 1)
-    all_on();
+    all_on(); //state 1
   else if (currentState == 2)
-    all_c_running_and_mpt_filling();
+    all_c_running_and_mpt_filling();//state 2
   else if (currentState == 3)
-    six_c_running_and_mpt_filling();
+    six_c_running_and_mpt_filling();//state 3
   else if (currentState == 4)
-    six_concentrators_running();
+    six_concentrators_running();//state 4
   else if (currentState == 5)
-    four_c_running_and_mpt_filling();
+    four_c_running_and_mpt_filling();//state 5
   else if (currentState == 6)
-    four_concentrators_running();
+    four_concentrators_running();//state 6
   else if (currentState == 7)
-    all_off();      
+    all_off(); //state 7     
             
 }
 
- void all_on(){//turns on all concentrators when called
+ void all_on(){//This function fills the LPT with oxygen from 12 concentrators up to 4 psi    
   digitalWrite(SSR4comp,LOW);
   digitalWrite(Inletvalve,LOW);
   digitalWrite(SSR1,HIGH);
@@ -116,13 +117,13 @@ void loop() {
   lcd.print("Running: ");
   lcd.setCursor(9,1);   
   lcd.println("All");
+  
   if(LpressureValue > 4)
      currentState = 2;   
   }
 
-void all_c_running_and_mpt_filling(){
+void all_c_running_and_mpt_filling(){//This function pumps oxygen from the LPT to HPT using a compressor untill the pressure in LPT reaches 1 psi
   
-  //pressurePrinting ();
 digitalWrite(SSR1,HIGH);
 digitalWrite(SSR2,HIGH);
 digitalWrite(SSR3,HIGH);
@@ -135,26 +136,26 @@ lcd.setCursor(0,1);
 lcd.print("Running: ");
 lcd.setCursor(9,1);   
 lcd.println("All"); 
-mpt_filling();
+mpt_filling();// This function switches on the compressor and inlet valve to pump oxygen from LPT to HPT
  
-if(HpressureValue > 20){ 
+if(HpressureValue > 20){// Outlet valve is opened is opened when HPT reaches 20 psi  
 digitalWrite(Outletvalve,HIGH);
 }
 
-if(HpressureValue < 20){
+if(HpressureValue < 20){// Outletvalve is closed when HPT is below 20 psi
 digitalWrite(Outletvalve,LOW);  
 }
 
-if(HpressureValue > 51){
+if(HpressureValue > 51){// When HPT pressure is greater than 51 enter state number 3 (six_c_running_and_mpt_filling())
 currentState = 3; 
 }
 
-if(LpressureValue < 1 )
+if(LpressureValue < 1 )//When LPT is below 1 psi enter state 1, (all_on())
 currentState = 1;  
 }
 
-void six_c_running_and_mpt_filling(){
-{runTime=currentMillis - previousMillis;//time taken by left and right side concentrators when HpressureValue is greater than 50 but < 60  
+void six_c_running_and_mpt_filling(){//This function chooses half of the concentrators at random and fills the HPT
+{runTime=currentMillis - previousMillis;//time taken by left and right side concentrators when HpressureValue is greater than 50  
 Serial.print("RunTime ="); 
 Serial.println(runTime,1);
    if(runTime < interval) { 
@@ -176,17 +177,17 @@ Serial.println(runTime,1);
        previousMillis = currentMillis;//stores the current time in previousMills to be used to reset the runTime 
      }
  mpt_filling();
-if(HpressureValue < 50)
+if(HpressureValue < 50)//if HPT pressure is less than 50 psi enter state 2 (all_c_running_and_mpt_filling())
   currentState = 2;
   
-if(HpressureValue >61) 
+if(HpressureValue >61)// if HPT pressure is greater than 61 psi enter state 5(four_c_running_and_mpt_filling()
   currentState = 5; 
-if(LpressureValue < 1 )
+if(LpressureValue < 1 )//if LPT pressure is less than 1 psi enter state 4(six_concentrators_running())
   currentState = 4; 
 }
 
-void six_concentrators_running(){
-//digitalWrite(Reliefvalve,LOW);
+void six_concentrators_running(){//This function chooses half of the concentrators at random
+
 digitalWrite(SSR4comp,LOW);
 digitalWrite(Inletvalve,LOW);
 {runTime=currentMillis - previousMillis;//time taken by left and right side concentrators when HpressureValue is greater than 50 but < 60  
@@ -210,11 +211,11 @@ digitalWrite(Inletvalve,LOW);
  if(runTime > interval2){
        previousMillis = currentMillis;//stores the current time in previousMills to be used to reset the runTime 
      }
- if(LpressureValue > 4 )
+ if(LpressureValue > 4 )//if LPT is greater than 4 psi then enter state 3(six_c_running_and_mpt_filling())
   currentState = 3;     
 }
 
-void mpt_filling(){
+void mpt_filling(){//This function pumps oxygen from LPT to HPT
   int value= digitalRead(SSR4comp);
 
   if(value ==1){
@@ -234,8 +235,8 @@ void mpt_filling(){
       }
 }
 
-void four_c_running_and_mpt_filling(){
- runTime1=currentMillis1 - previousMillis1;// timing for turning two sockets when prssure is between 60 and 70
+void four_c_running_and_mpt_filling(){//This function chooses four concentrators at random and fills the HPT
+ runTime1=currentMillis1 - previousMillis1;// timing for turning two sockets when prssure is greater than 60 
  Serial.print("RunTime1 ="); 
  Serial.println(runTime1,1);    
     if(runTime1 < interval1){
@@ -293,17 +294,17 @@ void four_c_running_and_mpt_filling(){
    if(runTime1 > interval6 ){
       previousMillis1 = currentMillis; //stores the current time in previousMills1 to be used to reset the runTime1 
     }
-   mpt_filling(); 
-  if(HpressureValue < 60)
+   mpt_filling();//This function pumps oxygen from LPT to HPT 
+  if(HpressureValue < 60)//When HPT is less than 60 psi then enter state 4 (six_concentrators_running())
       currentState = 4; 
-  if(HpressureValue > 70 )
+  if(HpressureValue > 70)// when HPT pressure is above 70 psi then enter state 7 (all_off())
       currentState = 7;    
-  if(LpressureValue < 1)
+  if(LpressureValue < 1)//if pressure is less than 1 psi then enter state 6 (four_concentrators_running())
       currentState = 6;    
      
 }
  
-void four_concentrators_running(){
+void four_concentrators_running(){//This function chooses four concentrators at random
  digitalWrite(SSR4comp,LOW);
  digitalWrite(Inletvalve,LOW);
  runTime1=currentMillis1 - previousMillis1;// timing for turning two sockets when prssure is between 60 and 70
@@ -364,11 +365,11 @@ void four_concentrators_running(){
    if(runTime1 > interval6 ){
       previousMillis1 = currentMillis; //stores the current time in previousMills1 to be used to reset the runTime1 
     }
-   if(LpressureValue > 4)
+   if(LpressureValue > 4)//when LPT pressure is greater than four then enter state 5 (four_c_running_and_mpt_filling())
       currentState = 5;      
 }
 
-void all_off(){
+void all_off(){ //This function swutches off all concentrators and enters state 6 when HPT pressure ia is less than 70
   
   digitalWrite(SSR1,LOW);
   digitalWrite(SSR2,LOW);
